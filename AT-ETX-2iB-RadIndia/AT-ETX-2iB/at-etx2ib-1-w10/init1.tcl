@@ -1,0 +1,10 @@
+set gaGui(xy) +334+256
+set gaSet(entDUT) "ETX-2I-B/WR/2SFP/4UTP"
+set gaSet(DutInitName) "ETX-2I-B.WR.2SFP.4UTP.tcl"
+set gaSet(performShortTest) "0"
+set gaSet(eraseTitle) "0"
+set gaSet(pioType) "Usb"
+set gaSet(enDownloadsBefore) "1"
+set gaSet(radTsts) "SkipDG"
+set gaSet(enUsbTest) "1"
+set gaSet(readTrace) "1"

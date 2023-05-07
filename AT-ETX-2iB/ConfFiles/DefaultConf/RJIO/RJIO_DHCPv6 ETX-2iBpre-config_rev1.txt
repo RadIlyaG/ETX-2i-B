@@ -1,0 +1,115 @@
+    configure
+#       QoS - Configuration
+        qos
+            queue-block-profile "Scheduling2"
+            exit
+#           Queue Group Configuration
+            queue-group-profile "QGN1"
+                queue-block 1/1
+                    profile "Scheduling2"
+                exit
+                queue-block 0/1
+                    bind queue 0 queue-block 1/1
+                exit
+                queue-block 0/2
+                    bind queue 1 queue-block 1/1
+                exit
+            exit
+        exit
+#       Port Configuration
+        port
+#           Ethernet - Port Configuration
+            ethernet 0/1
+                queue-group profile "QGN1"
+            exit
+#           Service Virtual Interface- Port Configuration
+            svi 1
+                no shutdown
+            exit
+        exit
+#       Bridge Configuration
+        bridge 1
+            name "BRIDGE 1"
+#           Bridge Port Configuration
+            port 1
+                no shutdown
+            exit
+            port 2
+                no shutdown
+            exit
+            port 3
+                no shutdown
+            exit
+            port 4
+                no shutdown
+            exit
+#           VLAN Configuration
+            vlan 888
+            exit
+        exit
+#       Flows Configuration
+        flows
+#           Classifier Profile Configuration
+            classifier-profile "all" match-any
+                match all
+            exit
+            classifier-profile "v888" match-any
+                match vlan 888
+            exit
+            classifier-profile "unt" match-any
+                match untagged
+            exit
+#           Flow Configuration
+            flow "eth1_in"
+                classifier "v888"
+                policer profile "Policer1"
+                ingress-port ethernet 0/1
+                egress-port bridge-port 1 1
+                reverse-direction block 0/1
+                no shutdown
+            exit
+            flow "eth2_in"
+                classifier "v888"
+                policer profile "Policer1"
+                ingress-port ethernet 0/2
+                egress-port bridge-port 1 2
+                reverse-direction block 0/1
+                no shutdown
+            exit
+            flow "mng_in"
+                classifier "v888"
+                no policer
+                vlan-tag pop vlan
+                ingress-port bridge-port 1 4
+                egress-port svi 1
+                no shutdown
+            exit
+            flow "mng_out"
+                classifier "unt"
+                policer profile "Policer1"
+                vlan-tag push vlan 888 p-bit fixed 0
+                ingress-port svi 1
+                egress-port bridge-port 1 4
+                no shutdown
+            exit
+        exit all
+configure
+router 1
+dhcp-client
+dhcpv6-option-request vendor-specific-information-17
+exit all
+configure
+router 1
+            name "Router#1"
+            interface 1
+                bind svi 1
+                dhcp-client
+                    client-id mac
+                exit
+                dhcpv6-client
+                ipv6-autoconfig
+                no shutdown
+
+            exit
+        exit
+    exit

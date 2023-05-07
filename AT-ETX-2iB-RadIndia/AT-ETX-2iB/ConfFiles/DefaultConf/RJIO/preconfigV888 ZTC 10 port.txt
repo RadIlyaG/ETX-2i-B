@@ -1,0 +1,120 @@
+
+exit all
+config qos queue-group-profile QGN1
+exit all
+config port eth 0/1 queue-group profile QGN1
+exit all
+
+
+#====================================================
+exit all
+config flow
+
+            classifier-profile "all" match-any 
+                match all 
+            exit
+            classifier-profile "v888" match-any 
+                match vlan 888
+            exit 
+  	classifier-profile unt match-any
+	match untagged
+	exit all
+
+
+#=======================Ring topology=============================
+exit all
+#*******Configure SVI
+configure port svi 1
+no shutdown
+exit all
+
+#*******Configure bridge
+configure bridge 1
+vlan-aware
+exit all
+ 
+# Activate bridge ports
+configure bridge 1
+port 1
+no shutdown
+exit all
+
+configure bridge 1
+port 2
+no shutdown
+exit all
+
+configure bridge 1
+port 3
+no shutdown
+exit all
+
+
+configure bridge 1
+port 4
+no shutdown
+exit all
+
+configure
+bridge 1 vlan 888
+exit all
+
+
+
+
+
+
+
+#============================== mng ============================
+
+exit all
+
+   conf flow
+ flow "eth1_in"
+        classifier "v888"
+        ingress-port ethernet 0/1
+        egress-port bridge-port 1 1
+        reverse-direction block 0/1
+        no shutdown
+    exit all
+
+ conf flow
+ flow "eth2_in"
+        classifier "v888"
+        ingress-port ethernet 0/2
+        egress-port bridge-port 1 2
+        reverse-direction block 0/1
+        no shutdown
+    exit all
+
+#*******Configure management flows
+ conf  flow
+    flow "mng_in"
+        classifier "v888"
+        no policer
+        vlan-tag pop vlan
+        ingress-port bridge-port 1 4
+        egress-port svi 1
+        no shutdown
+    exit
+    flow "mng_out"
+        classifier "unt"
+        vlan-tag push vlan 888 p-bit fixed 0
+        ingress-port svi 1
+        egress-port bridge-port 1 4
+        no shutdown
+    exit all
+
+
+
+#*******Configure router interface
+
+configure router 1
+interface 1
+bind svi 1
+dhcpv6-client
+no shutdown
+exit all
+
+
+
