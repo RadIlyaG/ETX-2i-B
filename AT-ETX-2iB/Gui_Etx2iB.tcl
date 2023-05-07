@@ -1027,7 +1027,7 @@ proc Quit {} {
 #***************************************************************************
 proc CaptureConsole {} {
   console eval { 
-    set ti [clock format [clock seconds] -format  "%Y.%m.%d_%H.%M"]
+    set ti [clock format [clock seconds] -format  "%Y.%m.%d_%H.%M.%S"]
     if ![file exists c:\\temp] {
       file mkdir c:\\temp
     }
