@@ -1462,7 +1462,7 @@ proc Login {} {
     #set ret [Wait "Wait for ETX up" 20 white]
     #if {$ret!=0} {return $ret}  
   }
-  for {set i 1} {$i <= 20} {incr i} { 
+  for {set i 1} {$i <= 30} {incr i} { 
     if {$gaSet(act)==0} {return -2}
     Status "Login into ETX-2I"
     puts "Login into ETX-2I i:$i"; update
