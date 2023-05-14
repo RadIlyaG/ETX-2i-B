@@ -46,6 +46,7 @@ proc DeleteOldUserDef {} {
   file delete -force C:/AT-ETX-2iB/ConfFiles/DefaultConf/Cellcom/ETX-2IB-10x1G.TXT
   file delete -force C:/AT-ETX-2iB/ConfFiles/DefaultConf/Cellcom/CELL_ETX-2IB-10x1G_Rev2.txt
   file delete -force C:/AT-ETX-2iB/ConfFiles/DefaultConf/Cellcom/CELL_ETX-2IB-10x1G_Rev4.TXT
+  file delete -force C:/AT-ETX-2iB/ConfFiles/DefaultConf/LY/LY_etx2iB_ztp_minimal_Rev1.cfg
 }
 
   
