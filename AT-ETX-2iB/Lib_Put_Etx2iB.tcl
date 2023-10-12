@@ -531,6 +531,28 @@ proc PS_IDTest {} {
 #     if {$ret=="-1" || $ret=="-2"} {return $ret}
 #     
 #   }
+
+  if [string match *MOT.H.* $gaSet(DutInitName)] {
+    set ret [Send $com "exit all\r" ETX-2I]
+    if {$ret!=0} {return $ret}
+    set ret [Send $com "configure chassis\r" chassis]
+    if {$ret!=0} {return $ret}
+    set ret [Send $com "show environment\r" chassis]
+    if {$ret!=0} {return $ret}
+
+    set val "FAN NA"
+    set res [regexp {(FAN[\s\-A-Za-z\d]+)Sensor} $buffer ma val]
+    if {$res==0} {
+      set gaSet(fail) "Fail to get FAN status"
+      return -1
+    }
+    if [string match {*FAN Status - 1 OK*} $ma] {
+      ## OK
+    } else {
+      set gaSet(fail) "$val"
+      return -1
+    }
+  }
   
   set ret [ReadMac]
   if {$ret!=0} {return $ret}

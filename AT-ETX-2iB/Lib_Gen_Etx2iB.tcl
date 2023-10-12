@@ -1554,7 +1554,7 @@ proc InformAboutNewFiles {} {
       if [string match *ilya-g-* [info host]] {
         set mlist {ilya_g@rad.com}
       } else {
-        set mlist {ilya_g@rad.com yulia_s@rad.com ronen_be@rad.com } ; # 
+        set mlist {ilya_g@rad.com yulia_s@rad.com} ; # 
       }
       set mess "The following was changed:\r\n"
       foreach {s} $::newFilesL {
