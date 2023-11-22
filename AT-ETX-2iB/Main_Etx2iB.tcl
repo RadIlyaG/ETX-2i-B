@@ -282,13 +282,18 @@ proc Testing {} {
       AddToLog "Test \'$testName\' $retTxt"
       if {$gaSet(pair)=="5"} {
         AddToPairLog $::pair "Test \'$testName\' $retTxt"
+        set pa $::pair
       } else {   
-        AddToPairLog $gaSet(pair) "Test \'$testName\' $retTxt"    
+        AddToPairLog $gaSet(pair) "Test \'$testName\' $retTxt"  
+        set pa $gaSet(pair)
       }
        
       puts "\n **** Test $numberedTest finish;  ret of $numberedTest is: $ret;  [MyTime]\n" 
       update
       if {$ret!=0} {
+        if {$ret=="-1"} {
+          UnregIdBarcode $pa $gaSet($pa.barcode1)
+        }
         break
       }
       if {$gaSet(oneTest)==1} {
@@ -340,12 +345,8 @@ proc Testing {} {
     }
     if {$gaSet(pair)=="5"} {
       set pa $pair
-#       puts "********* DUT $pair finish *********..[MyTime]..\n\n"
-#       AddToLog "$logText \n    ********* DUT $pair $retTxt   *********\n"
     } else {
       set pa $gaSet(pair)
-#       puts "********* DUT $gaSet(pair) finish *********..[MyTime]..\n\n"
-#       AddToLog "$logText \n    ********* DUT $gaSet(pair) $retTxt   *********\n"
     }
     puts "********* DUT $pa finish *********..[MyTime]..\n\n"
     AddToLog "$logText \n    ********* DUT $pa $retTxt   *********\n"
@@ -393,28 +394,16 @@ proc Testing {} {
   }
   
   if {$gaSet(pair)=="5"} {
-      for {set pair 1} {$pair <= $gaSet(maxMultiQty)} {incr pair} {
-        set bg [$gaGui(labPairPerf$pair) cget -bg]
-        if {$bg=="green" || $bg=="#ddffdd"} {
-          set endFlag Pass
-        } elseif {$bg=="red"} {
-          set endFlag Fail
-        } else {
-          continue
-        }
-        set pa $pair
-        if {[string index [file rootname $gaSet(log.$pa)] end]=="s" ||\
-            [string index [file rootname $gaSet(log.$pa)] end]=="l"} {
-          ## in case of -Pass or -Fail
-          set newLog [string range [file rootname $gaSet(log.$pa)] 0 end-5]
-          file rename -force $gaSet(log.$pa) $newLog.txt    
-        }
-        file rename -force $gaSet(log.$pa) [file rootname $gaSet(log.$pa)]-$endFlag.txt
-        set gaSet(runStatus) $endFlag
-        SQliteAddLine $pa
-      }  
-    } else {
-      set pa $gaSet(pair)
+    for {set pair 1} {$pair <= $gaSet(maxMultiQty)} {incr pair} {
+      set bg [$gaGui(labPairPerf$pair) cget -bg]
+      if {$bg=="green" || $bg=="#ddffdd"} {
+        set endFlag Pass
+      } elseif {$bg=="red"} {
+        set endFlag Fail
+      } else {
+        continue
+      }
+      set pa $pair
       if {[string index [file rootname $gaSet(log.$pa)] end]=="s" ||\
           [string index [file rootname $gaSet(log.$pa)] end]=="l"} {
         ## in case of -Pass or -Fail
@@ -424,7 +413,19 @@ proc Testing {} {
       file rename -force $gaSet(log.$pa) [file rootname $gaSet(log.$pa)]-$endFlag.txt
       set gaSet(runStatus) $endFlag
       SQliteAddLine $pa
+    }  
+  } else {
+    set pa $gaSet(pair)
+    if {[string index [file rootname $gaSet(log.$pa)] end]=="s" ||\
+        [string index [file rootname $gaSet(log.$pa)] end]=="l"} {
+      ## in case of -Pass or -Fail
+      set newLog [string range [file rootname $gaSet(log.$pa)] 0 end-5]
+      file rename -force $gaSet(log.$pa) $newLog.txt    
     }
+    file rename -force $gaSet(log.$pa) [file rootname $gaSet(log.$pa)]-$endFlag.txt
+    set gaSet(runStatus) $endFlag
+    SQliteAddLine $pa
+  }
     
   
   AddToLog "********* TEST FINISHED  *********" 
@@ -859,8 +860,10 @@ proc LedsEthTst {uut} {
 
   if {$gaSet(pair)==5} {
     set txt0 "UUT-$uut"
+    set pa $uut
   } else {
     set txt0 UUT
+    set pa 1
   }
   set txt "On $txt0 verify that:\n\
   GREEN \'LINK\' and ORANGE \'ACT\' leds of \'MNG-ETH\' are ON\n\
@@ -874,6 +877,7 @@ proc LedsEthTst {uut} {
   if {$res!="OK"} {
     set gaSet(fail) "LED Test failed"
     set ret -1
+    UnregIdBarcode $pa $gaSet($pa.barcode1)
   } else {
     set ret 0    
   }
@@ -920,6 +924,7 @@ proc Leds {} {
   } else {
     set ret [LedsSingle]
   }
+  return $ret
 }
 # ***************************************************************************
 # LedsSingle
@@ -941,7 +946,7 @@ proc LedsSingle {} {
     set ret -1
     AddToLog "********* Leds' Test FAIL *********"
     AddToPairLog $gaSet(pair) "********* Leds' Test FAIL *********"
-    
+    UnregIdBarcode $gaSet(pair) $gaSet($gaSet(pair).barcode1)
     return -1    
   } else {
     set ret 0
@@ -971,6 +976,7 @@ proc LedsSingle {} {
       set txt FAIL
       ## update the final result
       set res $ret
+      UnregIdBarcode $pair $gaSet($pair.barcode1)
     } elseif {$ret=="0"} {
       set clr #ddffdd 
       set txt PASS
@@ -1016,6 +1022,7 @@ proc LedsMulti {} {
     foreach pair [PairsToTest] {
       MuxMngIO ioToGenMngToPc
       PairPerfLab $pair red
+      UnregIdBarcode $pair $gaSet($pair.barcode1)
     }    
   } else {
     set ret 0
@@ -1043,6 +1050,9 @@ proc LedsMulti {} {
       set txt FAIL
       ## update the final result
       set res $ret
+      if {$ret=="-1"} {
+        UnregIdBarcode $pair $gaSet($pair.barcode1)
+      }
     } elseif {$ret=="0"} {
       set clr #ddffdd 
       set txt PASS
