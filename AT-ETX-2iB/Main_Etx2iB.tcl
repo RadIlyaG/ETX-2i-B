@@ -766,26 +766,29 @@ proc DataTransmissionTestPerf {lGens packRate mode} {
   set ret [Etx204Check $lGens $packRate $b]
   if {$ret!=0} {return $ret}
   
-  ##16/12/2019 07:31:18
-  if {[string match *CMB* $up] && $mode=="SFP"} {
-    ## don't check additional off-on for Combo in SFP. It already done in UTP
-  } else {   
-    for {set addRun 1} {$addRun <= 5} {incr addRun} {
-      Status "Additional run $addRun"
-      Power all off
-      after 3000
-      Power all on
+  ## 09:33 27/11/2023 no off-on
+  if 0 {
+    ##16/12/2019 07:31:18
+    if {[string match *CMB* $up] && $mode=="SFP"} {
+      ## don't check additional off-on for Combo in SFP. It already done in UTP
+    } else {   
+      for {set addRun 1} {$addRun <= 5} {incr addRun} {
+        Status "Additional run $addRun"
+        Power all off
+        after 3000
+        Power all on
+        
+        set ret [Login]
+        if {$ret!=0} {return $ret}
+        set ret [Wait "Waiting for stabilization" 15 white]
+        if {$ret!=0} {return $ret}
       
-      set ret [Login]
-      if {$ret!=0} {return $ret}
-      set ret [Wait "Waiting for stabilization" 15 white]
-      if {$ret!=0} {return $ret}
-    
-      Etx204Start
-      set ret [Wait "Data is running" 10 white]
-      if {$ret!=0} {return $ret}
-      set ret [Etx204Check $lGens $packRate $b]
-      if {$ret!=0} {return $ret}  
+        Etx204Start
+        set ret [Wait "Data is running" 10 white]
+        if {$ret!=0} {return $ret}
+        set ret [Etx204Check $lGens $packRate $b]
+        if {$ret!=0} {return $ret}  
+      }
     }
   }
  
