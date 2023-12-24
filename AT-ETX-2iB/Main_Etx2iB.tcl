@@ -882,7 +882,21 @@ proc LedsEthTst {uut} {
     set ret -1
     UnregIdBarcode $pa $gaSet($pa.barcode1)
   } else {
-    set ret 0    
+    if {$gaSet(DutFullName)=="ETX-2I-B_MOT/H/WR/2SFP/4SFP/BC/RTR" || $gaSet(DutFullName)=="ETX-2I-B_CEL/H/WR/2SFP/4SFP4UTP/DRC"} {
+      set txt "On $txt0 verify FAN is rotating"
+      set res [DialogBox -type "OK Fail" -icon /images/question -title "FAN Test" \
+          -message $txt  -parent $gaSet(sstatus) -place below]
+      update
+      if {$res!="OK"} {
+        set gaSet(fail) "FAN Test failed"
+        set ret -1
+        UnregIdBarcode $pa $gaSet($pa.barcode1)
+      } else {
+        set ret 0    
+      }
+    } else {
+      set ret 0
+    }
   }
   puts "ret of LedsEthTst $txt0 : <$ret>"
   return $ret
