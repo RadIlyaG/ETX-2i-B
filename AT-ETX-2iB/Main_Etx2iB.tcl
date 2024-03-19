@@ -93,9 +93,13 @@ proc BuildTests {} {
 #       lappend lTestNames RtrConf RtrArp RtrData
 #     }
     
-      if {$b=="2iB" && $up=="4SFP4UTP" && $d=="D" && [string match *HRC* $gaSet(DutInitName)]==0} {
-        lappend lTestNames FAN
-      } 
+      # if {$b=="2iB" && $up=="4SFP4UTP" && $d=="D" && [string match *HRC* $gaSet(DutInitName)]==0} {
+        # lappend lTestNames FAN
+      # } 
+      if {$gaSet(DutFullName)=="ETX-2I-B_MOT/H/WR/2SFP/4SFP/BC/RTR" || \
+          $gaSet(DutFullName)=="ETX-2I-B_CEL/H/WR/2SFP/4SFP4UTP/DRC"} {
+        lappend lTestNames FAN  
+      }
     
       lappend lTestNames SetToDefaultAll Mac_BarCode 
     
@@ -176,6 +180,9 @@ proc Testing {} {
 #   if {[string match {*Leds*} $gaSet(startFrom)] || [string match {*Mac_BarCode*} $gaSet(startFrom)]} {
 #     set ret 0
 #   }
+  #AddToPairLog $gaSet(pair) "$gaSet(operatorID) $gaSet(operator)"
+  
+        
   foreach {b r p d ps np up} [split $gaSet(dutFam) .] {}
   puts "\n Before LedsEth. lRunTests:<$lRunTests> glTests:<$glTests>" ; update
   if {$gaSet(ledsBefore)==1 && $b!="DNFV"} {
@@ -217,6 +224,14 @@ proc Testing {} {
       
     set ::pair $pair
     puts "\n\n ********* DUT $pair start *********..[MyTime].."
+    
+    if {$gaSet(pair)=="5"} {
+      AddToLog "$gaSet(operatorID) $gaSet(operator)"
+      AddToPairLog $::pair "$gaSet(operatorID) $gaSet(operator)"
+    } else {
+      AddToLog "$gaSet(operatorID) $gaSet(operator)"
+      AddToPairLog $gaSet(pair) "$gaSet(operatorID) $gaSet(operator)"
+    }
 
     Status "DUT start"
     set gaSet(curTest) ""
@@ -1463,6 +1478,11 @@ proc DnfvMac_BarCode {run} {
 proc FAN {run} {
   global gaSet
   set ret [FanTestPerf]
+  if {$ret!=0} {
+    after 5000
+    set ret [FanTestPerf]
+  }  
+  
   return $ret
 }
 # ***************************************************************************

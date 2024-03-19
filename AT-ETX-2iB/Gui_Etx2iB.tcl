@@ -512,8 +512,6 @@ proc ButRun {} {
 #   source Lib_Put_RicEth_$gaSet(dutFam).tcl
 #   
   if {$ret==0} {
-    AddToPairLog $gaSet(pair) "$gaSet(operatorID) $gaSet(operator)"
-  
     IPRelay-Green
     Status ""
     set gaSet(curTest) [$gaGui(startFrom) cget -text]
@@ -567,7 +565,7 @@ proc ButRun {} {
 #         set ret 0
 #         set gaSet(1.barcode1) "skipped" 
         }
-      }
+      }      
       
       if {$ret==0} {
         set ret [GuiReadSerNum]
@@ -576,8 +574,7 @@ proc ButRun {} {
           set ret -4
         }
       }
-      
-      
+            
       if {$ret==0} {
         IPRelay-Green
         set ret [OpenRL]
@@ -605,10 +602,8 @@ proc ButRun {} {
     IPRelay-LoopRed
 #     ## since I deleted the LedsEth test from the glTests, I should add it again by BuildTests
 #     BuildTests
-	  
-
   }
-  
+
   if {$ret==0} {
     RLSound::Play pass
     Status "Done"  green
