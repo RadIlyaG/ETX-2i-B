@@ -101,7 +101,7 @@ proc BuildTests {} {
         lappend lTestNames FAN  
       }
     
-      lappend lTestNames SetToDefaultAll Mac_BarCode 
+      lappend lTestNames SetToDefaultAll  
     
 #     08/04/2019 13:53:39
 #     if {$b=="RJIO" || [string match *CEL* $gaSet(DutFullName)]} {
@@ -113,16 +113,18 @@ proc BuildTests {} {
       lappend lTestNames WriteSerialNumber
     }
     
-    if {$gaSet(DefaultCF)!="" && $gaSet(DefaultCF)!="c:/aa"} {
-      lappend lTestNames LoadDefaultConfiguration
-    }
-    
-    
     if {$gaSet(enPart1Test)==0} {
       if {$gaSet(enDownloadsBefore)==1} {
         lappend lTestNames Leds
       } 
     }
+    
+    if {$gaSet(DefaultCF)!="" && $gaSet(DefaultCF)!="c:/aa"} {
+      lappend lTestNames LoadDefaultConfiguration
+    }
+    
+    lappend lTestNames Mac_BarCode 
+    
   } elseif {$b=="DNFV"} {    
     set lTestNames [list DnfvSoftwareDownload DnfvParameters    DnfvMacSwID DnfvHwType\
         DnfvDataTransmissionConf DnfvDataTransmission DnfvMac_BarCode DnfvLed]
@@ -254,6 +256,16 @@ proc Testing {} {
     foreach numberedTest $lRunTests {
       if {[string match {*Leds} $numberedTest]} {
         ## do not perform the Leds Test together with all test
+        ## it will performed for all passed pairs at end of the proc
+        continue
+      }
+      if {[string match {*LoadDefaultConfiguration} $numberedTest]} {
+        ## do not perform the LoadDefaultConfiguration Test together with all test
+        ## it will performed for all passed pairs at end of the proc
+        continue
+      }
+      if {[string match {*Mac_BarCode} $numberedTest]} {
+        ## do not perform the Mac_BarCode Test together with all test
         ## it will performed for all passed pairs at end of the proc
         continue
       }
@@ -399,13 +411,55 @@ proc Testing {} {
     if {$gaSet(act)==0} {return -2}
 #     #AddToLog "Pair:$pair Leds Test start"  
     set ret [Leds]   
+  
+    if {$ret==0 && $retLed==0} {
+      set ret 0    
+      set endFlag Pass
+    } else {
+      set ret -1
+      set endFlag Fail
+    }
+    AddToLog "********* Leds Test finished: $endFlag *********"  
   }
-  if {$ret==0 && $retLed==0} {
-    set ret 0    
-    set endFlag Pass
-  } else {
-    set ret -1
-    set endFlag Fail
+  
+  if {[llength [PairsToTest]] > 0} {
+    set ldcIndx [lsearch -glob $glTests *LoadDefaultConfiguration]
+    if {[llength $lPassPair]>0 && $ldcIndx!="-1"} {
+      set gaSet(curTest) [lindex $glTests $ldcIndx]
+      AddToLog "********* LoadDefaultConfiguration Test start *********"  
+
+      if {$gaSet(act)==0} {return -2}
+      set ret [LoadDefaultConfiguration 1]   
+    
+      if {$ret==0} {
+        set ret 0    
+        set endFlag Pass
+      } else {
+        set ret -1
+        set endFlag Fail
+      }
+      AddToLog "********* LoadDefaultConfiguration Test finished: $endFlag *********"  
+    }
+  }
+  
+  if {[llength [PairsToTest]] > 0} {
+    set mbIndx [lsearch -glob $glTests *Mac_BarCode]
+    if {[llength $lPassPair]>0 && $mbIndx!="-1"} {
+      set gaSet(curTest) [lindex $glTests $mbIndx]
+      AddToLog "********* Mac_BarCode Test start *********"  
+
+      if {$gaSet(act)==0} {return -2}
+      set ret [Mac_BarCode 1]   
+    
+      if {$ret==0} {
+        set ret 0    
+        set endFlag Pass
+      } else {
+        set ret -1
+        set endFlag Fail
+      }
+      AddToLog "********* Mac_BarCode Test finished: $endFlag *********"  
+    }
   }
   
   if {$gaSet(pair)=="5"} {
@@ -896,6 +950,7 @@ proc LedsEthTst {uut} {
     set gaSet(fail) "LED Test failed"
     set ret -1
     UnregIdBarcode $pa $gaSet($pa.barcode1)
+    PairPerfLab $pa red
   } else {
     if {$gaSet(DutFullName)=="ETX-2I-B_MOT/H/WR/2SFP/4SFP/BC/RTR" || $gaSet(DutFullName)=="ETX-2I-B_CEL/H/WR/2SFP/4SFP4UTP/DRC"} {
       set txt "On $txt0 verify FAN is rotating"
@@ -906,6 +961,7 @@ proc LedsEthTst {uut} {
         set gaSet(fail) "FAN Test failed"
         set ret -1
         UnregIdBarcode $pa $gaSet($pa.barcode1)
+        PairPerfLab $pa red
       } else {
         set ret 0    
       }
@@ -1125,38 +1181,59 @@ proc SetToDefaultAll {run} {
 # ***************************************************************************
 proc Mac_BarCode {run} {
   global gaSet  
-  set pair $::pair 
-  puts "Mac_BarCode \"$pair\" "
+  # set pair $::pair 
+  # puts "Mac_BarCode \"$pair\" "
   mparray gaSet *mac* ; update
   mparray gaSet *barcode* ; update
   set badL [list]
   set ret -1
-  foreach unit {1} {
-    if ![info exists gaSet($pair.mac$unit)] {
-      set ret [ReadMac]
-      if {$ret!=0} {return $ret}
+  Power all on
+  MuxMngIO nc
+  MassConnect NC
+  set ret -1
+  foreach pair [PairsToTest] {
+    puts "Mac_BarCode \"$pair\" "
+    PairPerfLab $pair yellow
+    MassConnect $pair
+    after 1000
+    if ![info exists gaSet($pair.mac1)] {
+      set ret [ReadMac]      
     } else {
       set ret 0
     }  
-  } 
-  foreach {b r p d ps np up} [split $gaSet(dutFam) .] {}
-  if {$b=="V"} {
-    if ![info exists gaSet($pair.mac2)] {
-      set ret [DnfvMacSwIDTest]
-      if {$ret!=0} {return $ret}
-    } else {
-      set ret 0
-    }  
-  }
-  #set ret [ReadBarcode [PairsToTest]]
-  #set ret [ReadBarcode]
-  if {$ret!=0} {return $ret}
-  #set ret [RegBC [PairsToTest]]
-  set ret [RegBC $pair]
-  if {$ret==0 && ($b=="V" || $b=="DNFV")} {
-    set ret [DnfvPower off] 
-    if {$ret!=0} {return $ret} 
-  }    
+   
+    if {$ret==0} {
+      foreach {b r p d ps np up} [split $gaSet(dutFam) .] {}
+      if {$b=="V"} {
+        if ![info exists gaSet($pair.mac2)] {
+          set ret [DnfvMacSwIDTest]        
+        } else {
+          set ret 0
+        }  
+      }
+    }
+    if {$ret==0} {
+      set ret [RegBC $pair]
+    }
+    if {$ret==0 && ($b=="V" || $b=="DNFV")} {
+      set ret [DnfvPower off] 
+    }   
+    if {$ret=="-1" || $ret=="-2"} {        
+      set clr red
+      set txt FAIL
+      ## update the final result
+      set res $ret
+      if {$ret=="-1"} {
+        UnregIdBarcode $pair $gaSet($pair.barcode1)
+      }
+    } elseif {$ret=="0"} {
+      set clr #ddffdd 
+      set txt PASS
+    } 
+    PairPerfLab $pair $clr
+    AddToLog "********* Mac_BarCode Test of UUT $pair $txt *********"
+    AddToPairLog $pair "********* Mac_BarCode Test of UUT $pair $txt *********"  
+  }  
   return $ret
 }
 
@@ -1166,7 +1243,31 @@ proc Mac_BarCode {run} {
 proc LoadDefaultConfiguration {run} {
   global gaSet  
   Power all on
-  set ret [LoadDefConf]
+  MuxMngIO nc
+  MassConnect NC
+  set ret -1
+  foreach pair [PairsToTest] {
+    if {$gaSet(act)==0} {break}
+    PairPerfLab $pair yellow
+    MassConnect $pair
+    after 1000
+    set ret [LoadDefConf]
+    if {$ret=="-1" || $ret=="-2"} {        
+      set clr red
+      set txt FAIL
+      ## update the final result
+      set res $ret
+      if {$ret=="-1"} {
+        UnregIdBarcode $pair $gaSet($pair.barcode1)
+      }
+    } elseif {$ret=="0"} {
+      set clr #ddffdd 
+      set txt PASS
+    } 
+    PairPerfLab $pair $clr
+    AddToLog "********* LoadDefaultConfiguration' Test of UUT $pair $txt *********"
+    AddToPairLog $pair "********* LoadDefaultConfiguration' Test of UUT $pair $txt *********"    
+  }
   return $ret
 }
 # ***************************************************************************

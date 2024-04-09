@@ -1469,8 +1469,10 @@ proc Login {} {
     }
     if {[string match *-2I* $buffer]} {
       set gaSet(prompt) "-2I"
+      set ret 0
     } elseif {[string match *ztp* $buffer]} {
       set gaSet(prompt) "ztp"
+      set ret 0
     }  
     if {[string match {*Authorized users only*} $buffer]} {
       Send $gaSet(comDut) \r stam 0.5
@@ -1489,7 +1491,7 @@ proc Login {} {
     Status "Login into ETX-2I"
     puts "Login into ETX-2I i:$i"; update
     $gaSet(runTime) configure -text $i
-    Send $gaSet(comDut) \r stam 5
+    Send $gaSet(comDut) \r stam 15
     
     append gaSet(loginBuffer) "$buffer"
     puts "<$gaSet(loginBuffer)>\n" ; update
@@ -1530,6 +1532,7 @@ proc Login {} {
       Send $gaSet(comDut) \x1F\r\r -2I
       return 0
     }
+    after 1000
   }
   if {$ret==0} {
     if {[string match *user>* $buffer]} {
@@ -1540,8 +1543,11 @@ proc Login {} {
       }
       if {[string match *-2I* $buffer]} {
         set gaSet(prompt) "-2I"
+        set ret 0
+        
       } elseif {[string match *ztp* $buffer]} {
         set gaSet(prompt) "ztp"
+        set ret 0
       }
       if {[string match {*Authorized users only*} $buffer]} {
         Send $gaSet(comDut) \r stam 0.5
@@ -1582,6 +1588,12 @@ proc FactDefault {mode {waitAfter 20}} {
   set gaSet(fail) "Set to Default fail"
   set com $gaSet(comDut)
   Send $com "exit all\r" stam 0.25 
+  
+  Send $com "file\r" ">file"
+  Send $com "delete user-default-config\r" "yes/no" 2
+  Send $com "y\r" ">fil" 2
+  after 1000
+  Send $com "exit all\r" stam 0.25 
  
   Status "Factory Default..."
   if {$mode=="std"} {
@@ -1594,6 +1606,9 @@ proc FactDefault {mode {waitAfter 20}} {
   if {$ret!=0} {return $ret}
   
   set ret [Wait "Wait DUT reboot" $waitAfter white]
+  if {$ret!=0} {return $ret}
+  
+  set ret [Login]
   return $ret
 }
 # ***************************************************************************
