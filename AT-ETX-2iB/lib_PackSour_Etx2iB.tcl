@@ -172,14 +172,13 @@ source Lib_GetOperator.tcl
 source Lib_GetSerNum.tcl
 DeleteOldApp
 DeleteOldUserDef
-
-#console show 
-
 if [file exists uutInits/$gaSet(DutInitName)] {
   source uutInits/$gaSet(DutInitName)
 } else {
   source [lindex [glob uutInits/ETX*.tcl] 0]
 }
+source Lib_Ramzor.tcl
+source lib_EcoCheck.tcl
 
 
 set gaSet(maxMultiQty) 27
