@@ -1544,7 +1544,7 @@ proc ianf {} {InformAboutNewFiles}
 proc InformAboutNewFiles {} {
   global gaSet
   if {$gaSet(radNet)==0} {return {} }
-  set path [file dirname [pwd]]
+  set path [pwd] ; #[file dirname [pwd]]
   set pathTail [file tail $path]
   set secNow [clock seconds]
   set ::newFilesL [list]
@@ -1595,7 +1595,7 @@ proc InformAboutNewFiles {} {
 # CheckFolder4NewFiles
 # ***************************************************************************
 proc CheckFolder4NewFiles {path secNow} {
-  #puts "CheckFolder4NewFiles $path $secNow"
+  puts "CheckFolder4NewFiles $path $secNow"
   foreach item [glob -nocomplain -directory $path *] {
     if [file isdirectory $item] {
       CheckFolder4NewFiles $item $secNow
