@@ -3526,7 +3526,7 @@ proc DyingGaspLogPerf {psOffOn psOff} {
   }
   set gaSet(fail) "Logon fail"
   
-  set ret [Wait "Wait for Management up" 10 white]
+  set ret [Wait "Wait for Management up" 200 white]
   if {$ret!=0} {return $ret}
   
   set ret [ClearLog]
