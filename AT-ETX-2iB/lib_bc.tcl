@@ -136,6 +136,8 @@ proc RegBC {lPassPair} {
       if {$gaSet(performMacIdCheck)=="1"} {
         set barc [string range $barcode 0 10]
         catch {exec java -jar $::RadAppsPath/CheckMAC.jar $barc $mac} resChk
+        #foreach {ret resTxt} [::RLWS::CheckMac $barcode AABBCCFFEEDD] {}
+        #puts "[MyTime] Res of CheckMac $barc $mac ret:<$ret> resTxt:<$resTxt>" ; update
         puts "[MyTime] Res of CheckMAC $barc $mac : <$resChk>" ; update
         if {$resChk!="0"} {
           set gaSet(fail) $resChk
@@ -493,7 +495,7 @@ proc ReadBarcode {lPassPair} {
           set pa $gaSet(pair) 
         }
         AddToPairLog $pa "$gaSet(DutFullName)"
-        AddToPairLog $pa "UUT - $barcode"
+        AddToPairLog $pa "UUT - $barcode $gaSet($pair.trace) "
         CheckMac $barcode $pa $uut
       } 
     }

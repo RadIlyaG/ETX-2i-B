@@ -212,6 +212,8 @@ if ![info exists gaSet(enSerNum)] {
   set gaSet(enSerNum) 0
 }
 
+set gaSet(eraseTitleGui) 0
+
 #set gaSet(1.barcode1) CE100025622
 
 GUI

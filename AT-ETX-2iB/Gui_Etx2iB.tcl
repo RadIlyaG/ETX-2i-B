@@ -54,9 +54,7 @@ proc GUI {} {
       {separator}
       {radiobutton "Next pair will be checked from begin" init {} {} -command {} -variable gaSet(nextPair) -value begin}
       {radiobutton "Next pair will be checked from the same test" init {} {} -command {} -variable gaSet(nextPair) -value same}
-      {separator}    
-      {radiobutton "Scan barcode each UUT" {} "" {} -command {ToogleEraseTitle 1} -variable gaSet(eraseTitleGui) -value 1}  
-      {radiobutton "Scan barcode each batch" {} "" {} -command {ToogleEraseTitle 0} -variable gaSet(eraseTitleGui) -value 0}  
+     
    
       
     }
@@ -155,7 +153,9 @@ proc GUI {} {
 #       {separator}
 # {command "Update INIT and UserDefault files on all the Testers" {} "Exit" {} -command {UpdateInitsToTesters}}
       # {separator}
-      
+       # {separator}    
+      # {radiobutton "Scan barcode each UUT" {} "" {} -command {ToogleEraseTitle 1} -variable gaSet(eraseTitleGui) -value 1}  
+      # {radiobutton "Scan barcode each batch" {} "" {} -command {ToogleEraseTitle 0} -variable gaSet(eraseTitleGui) -value 0}  
 
   set mainframe [MainFrame .mainframe -menu $descmenu]
   

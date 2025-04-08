@@ -199,10 +199,11 @@ proc SaveInit {} {
     
   puts $id "set gaSet(performShortTest) \"$gaSet(performShortTest)\""  
   
-  if {![info exists gaSet(eraseTitle)]} {
-    set gaSet(eraseTitle) 1
-  }
-  puts $id "set gaSet(eraseTitle) \"$gaSet(eraseTitle)\""
+  # if {![info exists gaSet(eraseTitle)]} {
+    # set gaSet(eraseTitle) 1
+  # }
+  # puts $id "set gaSet(eraseTitle) \"$gaSet(eraseTitle)\""
+  puts $id "set gaSet(eraseTitle) 0"
   
   if [info exists gaSet(pioType)] {
     set pioType $gaSet(pioType)
@@ -614,36 +615,59 @@ proc GetDbrName {} {
   wm title . "$gaSet(pair) : "
   after 500
   
-  catch {exec java -jar $::RadAppsPath/OI4Barcode.jar $barcode} b
-  set fileName MarkNam_$barcode.txt
-  after 500
-  if ![file exists MarkNam_$barcode.txt] {
-    set gaSet(fail) "File $fileName is not created. Verify the Barcode"
-    #exec C:\\RLFiles\\Tools\\Btl\\failbeep.exe &
+  # catch {exec java -jar $::RadAppsPath/OI4Barcode.jar $barcode} b
+  # set fileName MarkNam_$barcode.txt
+  # after 500
+  # if ![file exists MarkNam_$barcode.txt] {
+    # set gaSet(fail) "File $fileName is not created. Verify the Barcode"
+    # #exec C:\\RLFiles\\Tools\\Btl\\failbeep.exe &
+    # RLSound::Play fail
+	  # Status "Test FAIL"  red
+    # DialogBox -aspect 2000 -type Ok -message $gaSet(fail) -icon images/error
+    # pack $gaGui(frFailStatus)  -anchor w
+	  # $gaSet(runTime) configure -text ""
+  	# return -1
+  # }
+  
+  # set fileId [open "$fileName"]
+    # seek $fileId 0
+    # set res [read $fileId]    
+  # close $fileId
+  
+  # #set txt "$barcode $res"
+  # set txt "[string trim $res]"
+  # #set gaSet(entDUT) $txt
+  # set gaSet(entDUT) ""
+  # puts "GetDbrName txt:<$txt>"
+  
+  
+  # set initName [regsub -all / $res .]
+  # puts "GetDbrName res:<$res>"
+  # puts "GetDbrName initName:<$initName>"
+  # set gaSet(DutFullName) $res
+  # set gaSet(DutInitName) $initName.tcl
+  
+  foreach {ret resTxt} [::RLWS::Get_OI4Barcode $barcode] {}
+  if {$ret=="0"} {
+    #  set dbrName [dict get $ret "item"]
+    set dbrName $resTxt
+  } else {
+    set gaSet(fail) $resTxt
     RLSound::Play fail
 	  Status "Test FAIL"  red
-    DialogBox -aspect 2000 -type Ok -message $gaSet(fail) -icon images/error
+    DialogBoxRamzor -aspect 2000 -type Ok -message $gaSet(fail) -icon images/error
     pack $gaGui(frFailStatus)  -anchor w
 	  $gaSet(runTime) configure -text ""
   	return -1
   }
-  
-  set fileId [open "$fileName"]
-    seek $fileId 0
-    set res [read $fileId]    
-  close $fileId
-  
-  #set txt "$barcode $res"
-  set txt "[string trim $res]"
-  #set gaSet(entDUT) $txt
+  set txt "[string trim $dbrName]"
   set gaSet(entDUT) ""
-  puts "GetDbrName txt:<$txt>"
+  puts "GetDbrName <$txt>"
   
-  
-  set initName [regsub -all / $res .]
-  puts "GetDbrName res:<$res>"
+  set initName [regsub -all / $dbrName .]
+  puts "GetDbrName dbrName:<$dbrName>"
   puts "GetDbrName initName:<$initName>"
-  set gaSet(DutFullName) $res
+  set gaSet(DutFullName) $dbrName
   set gaSet(DutInitName) $initName.tcl
   
   file delete -force MarkNam_$barcode.txt
@@ -1180,7 +1204,8 @@ proc GetDbrSW {barcode} {
 #       return -1
 #     } 
 #   }  
-  catch {exec $gaSet(javaLocation)\\java -jar $::RadAppsPath/SWVersions4IDnumber.jar $barcode} b
+  #catch {exec $gaSet(javaLocation)\\java -jar $::RadAppsPath/SWVersions4IDnumber.jar $barcode} b
+  foreach {res b} [::RLWS::Get_SwVersions $barcode] {}
   puts "GetDbrSW barcode:<$barcode> b:<$b>" ; update
   after 500
   if ![info exists gaSet(swPack)] {
@@ -1220,8 +1245,8 @@ proc GetDbrSW {barcode} {
   
   pack forget $gaGui(frFailStatus)
   
-  set swTxt [glob SW*_$barcode.txt]
-  catch {file delete -force $swTxt}
+  # set swTxt [glob SW*_$barcode.txt]
+  # catch {file delete -force $swTxt}
   
   #Status ""
   update
