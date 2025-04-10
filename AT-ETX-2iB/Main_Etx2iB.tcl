@@ -13,7 +13,7 @@ proc BuildTests {} {
   
   set lTestsAllTests [list]
   if {$b!="DNFV"} {
-    set lDownloadTests [list BootDownload SetDownload]
+    set lDownloadTests [list BootDownload] ; ## 10:33 09/04/2025 SetDownload done by SoftwareDownload
     if {$gaSet(enPart1Test)==0} {
       lappend lDownloadTests Pages
     }      
@@ -60,7 +60,10 @@ proc BuildTests {} {
           ## don't check DyingGasp on UUT 10 ports, 24/04/2017 08:14:39;  puts 10p
         } else {
           ## 21/04/2019 08:25:46 lappend lTestNames DyingGaspConf DyingGaspTest_1
+          
+          ## 10:42 09/04/2025 Sinse we check log only, there is no need to config anything
           lappend lTestNames DyingGaspConf DyingGaspTest
+          ##lappend lTestNames  DyingGaspTest
         }
       }
     
@@ -1425,6 +1428,9 @@ proc Pages {run} {
   set ret [GetPageFile $gaSet($::pair.barcode1) $gaSet($::pair.trace)]
   if {$ret!=0} {return $ret}
   
+  set ret [EntryBootMenu]
+  if {$ret!=0} {return $ret}
+  
   set ret [WritePages]
   if {$ret!=0} {return $ret}
   
@@ -1434,6 +1440,8 @@ proc Pages {run} {
 # SoftwareDownload
 # ***************************************************************************
 proc SoftwareDownload {run} {
+  set ret [SetSWDownload]
+  if {$ret!=0} {return $ret}
   
   set ret [EntryBootMenu]
   if {$ret!=0} {return $ret}

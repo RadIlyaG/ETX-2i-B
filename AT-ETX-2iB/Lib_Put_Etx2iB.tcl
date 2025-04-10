@@ -3531,7 +3531,7 @@ proc DyingGaspLogPerf {psOffOn psOff} {
   
   set ret [ClearLog]
   if {$ret!=0} {return $ret}
-  ReadLog "stam"
+  ReadLog "stam" 1
   set ret [ClearLog]
   if {$ret!=0} {return $ret}
   
@@ -3551,9 +3551,13 @@ proc DyingGaspLogPerf {psOffOn psOff} {
   }
   set gaSet(fail) "Logon fail"
   
-  set ret [ReadLog "Dying gasp"]
-  if {$ret!=0} {
-    return $ret
+  for {set i 1} {$i<=5} {incr i} {
+    set ret [ReadLog "Dying gasp" $i]
+    if {$ret==0 || $ret=="-2"} {
+      return $ret
+    } else {
+      after 5000
+    }
   }
   
   return $ret  
@@ -3577,28 +3581,31 @@ proc ClearLog {} {
 # ***************************************************************************
 # ReadLog
 # ***************************************************************************
-proc ReadLog {findIt} {
+proc ReadLog {findIt tr} {
   global gaSet buffer
   set com $gaSet(comDut)
-  puts "[MyTime] ReadLog (\'$findIt\')"
+  puts "[MyTime] ReadLog (\'$findIt\') tr:$tr"
   Send $com "exit all\r" stam 0.25 
   set ret [Send $com "configure reporting\r" ">reporting"]
   if {$ret!=0} {return $ret}
   set ret [Send $com "show log\r" ">reporting" 0.5]
   set resFind -1
-  for {set i 1} {$i <= 20} {incr i} {
+  for {set i 1} {$i <= 50} {incr i} {
     if {$gaSet(act)==0} {return -2}
     
-    puts "[MyTime] ReadLog (\'$findIt\') $i"
+    puts "[MyTime] ReadLog (\'$findIt\') tr:$tr i:$i"
     if {[string match "*$findIt*" $buffer]} {
+      [Send $com "\3\r\r\r" ">reporting"
       set resFind 0
       break
     }
-    set ret [Send $com "\r" "reporting" 1.5]
+    
+    set ret [Send $com "\r" ">reporting" 1.5]
     if {$ret==0} {
       break
     }
   }
+  
   ## check after last Enter when the unit already at "reporting" level
   if {[string match "*$findIt*" $buffer]} {
     set resFind 0

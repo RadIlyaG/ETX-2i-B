@@ -222,9 +222,9 @@ proc RegBC {lPassPair} {
 # ***************************************************************************
 # CheckBcOk
 # ***************************************************************************
-proc CheckBcOk {lPassPair} {
+proc CheckBcOk {lPassPair readTrace} {
 	global  gaDBox  gaSet
-  puts "CheckBcOk \"$lPassPair\"" ;  update
+  puts "CheckBcOk \"$lPassPair\" $readTrace" ;  update
   set pair 1
   foreach {b r p d ps np up} [split $gaSet(dutFam) .] {}
   if {$gaSet(useExistBarcode)==0} {
@@ -234,16 +234,16 @@ proc CheckBcOk {lPassPair} {
         if {$b=="DNFV"} {   
           lappend entLabL "DNFV-$pair "
         } elseif {$b=="V"} { 
-          if {$gaSet(readTrace)=="0"} {  
+          if {$readTrace=="0"} {  
             lappend entLabL "UUT-$pair" "DNFV"
-          } elseif {$gaSet(readTrace)=="1"} {  
+          } elseif {$readTrace=="1"} {  
             lappend entLabL "UUT-$pair" "Traceability" "DNFV"
           } 
         } else {   
           #lappend entLabL "UUT-$pair "
-          if {$gaSet(readTrace)=="0"} {  
+          if {$readTrace=="0"} {  
             lappend entLabL "UUT-$pair "
-          } elseif {$gaSet(readTrace)=="1"} {  
+          } elseif {$readTrace=="1"} {  
             lappend entLabL "UUT-$pair " "Traceability"
           }
         }  
@@ -253,16 +253,16 @@ proc CheckBcOk {lPassPair} {
         #lappend entLabL "Pair-$pair Local ($gaSet($pair.mac1))" "Remote ($gaSet($pair.mac2))"   
         if {$b!="V"} {
           #lappend entLabL "UUT" 
-          if {$gaSet(readTrace)=="0"} {  
+          if {$readTrace=="0"} {  
             lappend entLabL "UUT"
-          } elseif {$gaSet(readTrace)=="1"} {  
+          } elseif {$readTrace=="1"} {  
             lappend entLabL "UUT" "Traceability"
           }
         } elseif {$b=="V"} {
           #lappend entLabL "UUT" "DNFV"
-          if {$gaSet(readTrace)=="0"} {  
+          if {$readTrace=="0"} {  
             lappend entLabL "UUT" "DNFV"
-          } elseif {$gaSet(readTrace)=="1"} {  
+          } elseif {$readTrace=="1"} {  
             lappend entLabL "UUT" "Traceability" "DNFV"
           }
         }
@@ -272,22 +272,22 @@ proc CheckBcOk {lPassPair} {
     set entLab $entLabL
     SendEmail "ETX-2i" "Read barcodes"
     if {$b!="V"} {
-      if {$gaSet(readTrace)=="0"} { 
+      if {$readTrace=="0"} { 
         set entPerRow 1
         set entQty [llength $lPassPair]        
         set entL "ent1"
-      } elseif {$gaSet(readTrace)=="1"} { 
+      } elseif {$readTrace=="1"} { 
         set entPerRow 2
         set entQty [expr {2*[llength $lPassPair]}]
         set entL "ent1 ent3"
       }
       set checkEntQty [llength $lPassPair]
     } elseif {$b=="V"} {
-      if {$gaSet(readTrace)=="0"} {
+      if {$readTrace=="0"} {
         set entPerRow 2
         set entQty [expr {2*[llength $lPassPair]}]
         set entL "ent1 ent2"
-      } elseif {$gaSet(readTrace)=="1"} {
+      } elseif {$readTrace=="1"} {
         set entPerRow 3
         set entQty [expr {3*[llength $lPassPair]}]
         set entL "ent1 ent3 ent2"
@@ -403,11 +403,23 @@ proc CheckBcOk {lPassPair} {
 proc ReadBarcode {lPassPair} {
   global gaSet gaDBox
   foreach {b r p d ps np up} [split $gaSet(dutFam) .] {}
-  puts "ReadBarcode \"$lPassPair\"" ;  update
+  set readTrace $gaSet(readTrace)
+  if {[llength $lPassPair] == 1} {  
+    ## because of multi we can not read the TraceID if just one unit is testing
+    if {$readTrace==1} {
+      if {[string match *BootDownload* $gaSet(startFrom)] || [string match *Pages* $gaSet(startFrom)]} {
+        ## Read TraceID in tests BootDownload and Pages only
+        set readTrace 1
+      } else {
+        set readTrace 0
+      }
+    }
+  }
+  puts "ReadBarcode \"$lPassPair\" readTrace:$readTrace" ;  update
   set ret -1
   catch {array unset gaDBox}
   while {$ret != "0" } {
-    set ret [CheckBcOk $lPassPair]
+    set ret [CheckBcOk $lPassPair $readTrace]
     puts "[MyTime] ret of CheckBcOk: $ret"
     Status $gaSet(fail)
     puts "CheckBcOk res:$ret "
@@ -443,7 +455,7 @@ proc ReadBarcode {lPassPair} {
   set pairIndx -1
   puts "b:$b"
   if {$b!="V"} {
-    if {$gaSet(readTrace)=="0"} {
+    if {$readTrace=="0"} {
       foreach {ent1} [lsort -dict [array names gaDBox entVal*]] {
         incr pairIndx
         set pair [lindex $lPassPair $pairIndx]
@@ -471,7 +483,7 @@ proc ReadBarcode {lPassPair} {
         AddToPairLog $pa "$gaSet(DutFullName)"
         AddToPairLog $pa "UUT - $barcode"
       } 
-    } elseif {$gaSet(readTrace)=="1"} {
+    } elseif {$readTrace=="1"} {
       foreach {ent1 ent2} [lsort -dict [array names gaDBox entVal*]] {
         incr pairIndx
         set pair [lindex $lPassPair $pairIndx]
@@ -500,7 +512,7 @@ proc ReadBarcode {lPassPair} {
       } 
     }
   } elseif {$b=="V"} {
-    if {$gaSet(readTrace)=="0"} {
+    if {$readTrace=="0"} {
       foreach {ent1 ent2} [lsort -dict [array names gaDBox entVal*]] {
         incr pairIndx
         set pair [lindex $lPassPair $pairIndx]
@@ -530,7 +542,7 @@ proc ReadBarcode {lPassPair} {
         AddToPairLog $pa "DNFV - $barc2"
         CheckMac $barc1 $pa 1
       } 
-    } elseif {$gaSet(readTrace)=="1"} {
+    } elseif {$readTrace=="1"} {
       foreach {ent1 ent2 ent3} [lsort -dict [array names gaDBox entVal*]] {
         incr pairIndx
         set pair [lindex $lPassPair $pairIndx]
