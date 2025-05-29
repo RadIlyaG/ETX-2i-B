@@ -1116,6 +1116,10 @@ proc DownloadConfFile {cf cfTxt save} {
     set ret [MyWaitFor $com {2I ztp} 0.25 8]
     if {$save==1} {
       set ret [Send $com "admin save\r" "successfull" 60]
+      if {$ret=="-1"} {
+        after 10000
+        set ret [Send $com "admin save\r" "successfull" 60]
+      }
     }
      
     set s2 [clock seconds]
