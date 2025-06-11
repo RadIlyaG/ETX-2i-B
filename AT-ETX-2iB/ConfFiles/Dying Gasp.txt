@@ -23,4 +23,4 @@ no shutdown
 tag-list unmasked
 trap-sync-group 1
 exit all
-save
+# save

@@ -1111,15 +1111,17 @@ proc DownloadConfFile {cf cfTxt save} {
   }
   close $id  
   if {$ret==0} {
-    #set ret [Send $com "exit all\r" "2I"]
+    #set ret [Send $com "exit all\r" "2I"]    
     Send $com "exit all\r" 
     set ret [MyWaitFor $com {2I ztp} 0.25 8]
     if {$save==1} {
+      Send $com "\r" "stam" 1
+      Wait "Wait before admin save" 10
       set ret [Send $com "admin save\r" "successfull" 60]
-      if {$ret=="-1"} {
-        after 10000
-        set ret [Send $com "admin save\r" "successfull" 60]
-      }
+      # if {$ret=="-1"} {
+        # Wait "Wait before second admin save" 10
+        # set ret [Send $com "admin save\r" "successfull" 60]
+      # }
     }
      
     set s2 [clock seconds]
