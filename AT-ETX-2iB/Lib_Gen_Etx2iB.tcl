@@ -1118,10 +1118,11 @@ proc DownloadConfFile {cf cfTxt save} {
       Send $com "\r" "stam" 1
       Wait "Wait before admin save" 10
       set ret [Send $com "admin save\r" "successfull" 60]
-      # if {$ret=="-1"} {
+      if {$ret=="-1"} {
+        set gaSet(fail) "No successfull after admin save"
         # Wait "Wait before second admin save" 10
         # set ret [Send $com "admin save\r" "successfull" 60]
-      # }
+      }
     }
      
     set s2 [clock seconds]
