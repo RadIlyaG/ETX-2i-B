@@ -5,7 +5,7 @@ package require json
 ::http::register https 8445 [list tls::socket -tls1 1]
 package require md5
 
-package provide RLWS 1.6
+package provide RLWS 1.7
 
 namespace eval RLWS { 
 
@@ -62,15 +62,16 @@ proc ::RLWS::UpdateDB2 {barcode uutName hostDescription  date time status  failT
   append url "&dbPath=$dbPath&dbName=$dbName&traceID=$traceID&poNumber=$poNumber&data1=$url_data1&data2=$url_data2&data3=$url_data3" 
   if $::RLWS::debugWS {puts "UpdateDB url:<$url>"}
 
-  set tok [::http::geturl $url -headers [list Authorization "Basic [base64::encode webservices:radexternal]"]]
-  update
-  if {[http::status $tok]=="ok" && [http::ncode $tok]=="200"} {
-    if $::RLWS::debugWS {puts "Add line to DB successfully"}
-  }
-  upvar #0 $tok state
-  #parray state
-  ::http::cleanup $tok
-
+  # set tok [::http::geturl $url -headers [list Authorization "Basic [base64::encode webservices:radexternal]"]]
+  # update
+  # if {[http::status $tok]=="ok" && [http::ncode $tok]=="200"} {
+    # if $::RLWS::debugWS {puts "Add line to DB successfully"}
+  # }
+  # upvar #0 $tok state
+  # parray state
+  # ::http::cleanup $tok
+  set resLst [::RLWS::_operateWS $url NA "UpdateDB2"]
+  return $resLst
 }
 
 proc CopyToLocalDB {} {
@@ -93,7 +94,7 @@ proc CopyToLocalDB {} {
   upvar #0 $tok state
   #parray state
   ::http::cleanup $tok
-
+  
 }
 
 proc ::RLWS::_convertToUrl {s} {
@@ -455,7 +456,11 @@ proc ::RLWS::_operateWS {url {query "NA"} paramName} {
     append cmd " -query $query"
   }
   
-  #if $::RLWS::debugWS {puts "cmd:<$cmd>"}
+  if $::RLWS::debugWS {
+    puts "url:<$url>"
+    puts "headers:<$headers>"    
+    puts "cmd:<$cmd>"
+  }
   if [catch {eval $cmd} tok] {
     after 2000
     if [catch {eval $cmd} tok] {
@@ -509,12 +514,15 @@ proc ::RLWS::_operateWS {url {query "NA"} paramName} {
     if [string match {*ServerPing*} $url] {
       return [list 0 $body]
     }
-    if {$mode=="get_file" && $res_val==0} {
+    if [string match {*add_row2_with_db*} $url] {    
+      return [list 0 "Web TCC DataBase is updated successfully"]
+    }
+    if {$mode=="get_file" && $res_val==0} {    
       if [catch {file size $localUCF} size] {
         return [list "-1" "Fail to get size of UserConfigurationFile"] ; #$localUCF
       } else {
         if [catch {open $localUCF r} fid] {
-          return [list "-1" "Fail to read UserConfigurationFile"] ; #$localUCF
+         return [list "-1" "Fail to read UserConfigurationFile"] ; #$localUCF
         } else {
           set problem 0
           set ucf_content [read $fid]
@@ -1390,6 +1398,7 @@ proc ::RLWS::Update_DigitalSerialNumber {id serial} {
     return [list -1 $value] 
   }
 }
+ 
 
 # ***************************************************************************
 # MacReg (MACReg_2MAC_2IMEI.exe)
