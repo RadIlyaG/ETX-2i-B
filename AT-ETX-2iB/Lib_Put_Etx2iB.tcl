@@ -3595,7 +3595,7 @@ proc ReadLog {findIt tr} {
     
     puts "[MyTime] ReadLog (\'$findIt\') tr:$tr i:$i"
     if {[string match "*$findIt*" $buffer]} {
-      [Send $com "\3\r\r\r" ">reporting"
+      Send $com "\3\r\r\r" ">reporting"
       set resFind 0
       break
     }
