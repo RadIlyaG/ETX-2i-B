@@ -414,6 +414,13 @@ proc ReadBarcode {lPassPair} {
         set readTrace 0
       }
     }
+  } else {
+    if {$readTrace==1} {
+      ## if we start from  Mac_BarCode and want to do it for the all UUTs - don't read TraceID
+      if {[string match *Mac_BarCode* $gaSet(startFrom)] && $gaSet(nextPair) == "same"} {
+        set readTrace 0
+      }
+    }
   }
   puts "ReadBarcode \"$lPassPair\" readTrace:$readTrace" ;  update
   set ret -1

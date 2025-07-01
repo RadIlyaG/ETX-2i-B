@@ -332,6 +332,11 @@ proc Testing {} {
       }
     }
     
+    if ![info exists ret] {
+      ## if there is no ret because no real test was performed
+      set ret 0 
+    }
+    
     if {$ret==0} {
       if {$gaSet(plEn)=="only"} {
         PairPerfLab $pair green
@@ -1194,6 +1199,7 @@ proc Mac_BarCode {run} {
   MassConnect NC
   set ret -1
   foreach pair [PairsToTest] {
+    set ::pair $pair
     puts "Mac_BarCode \"$pair\" "
     PairPerfLab $pair yellow
     MassConnect $pair
