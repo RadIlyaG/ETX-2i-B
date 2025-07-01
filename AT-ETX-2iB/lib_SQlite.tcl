@@ -71,7 +71,7 @@ proc SQliteAddLine {pair} {
     set operator ""
   }
   
-  if [info exists gaSet($pair.trace)] {
+  if {[info exists gaSet($pair.trace)] && $gaSet($pair.trace)!="NA"} {
     set traceId $gaSet($pair.trace)
     foreach {ret resTxt} [::RLWS::Get_PcbTraceIdData $traceId {"po number"}] {}
     if {$ret!="0"} {
@@ -81,6 +81,7 @@ proc SQliteAddLine {pair} {
     }
   } else {
     set traceId ""
+    set poNumber ""
   }
 
 
