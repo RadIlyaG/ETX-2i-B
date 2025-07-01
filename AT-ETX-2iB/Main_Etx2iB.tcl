@@ -60,10 +60,9 @@ proc BuildTests {} {
           ## don't check DyingGasp on UUT 10 ports, 24/04/2017 08:14:39;  puts 10p
         } else {
           ## 21/04/2019 08:25:46 lappend lTestNames DyingGaspConf DyingGaspTest_1
-          
-          ## 10:42 09/04/2025 Sinse we check log only, there is no need to config anything
-          lappend lTestNames DyingGaspConf DyingGaspTest
-          ##lappend lTestNames  DyingGaspTest
+          ## 07:33 01/07/2025 10:42 09/04/2025 Sinse we check log only, there is no need to config anything
+          ## 07:32 01/07/2025 lappend lTestNames DyingGaspConf DyingGaspTest
+          lappend lTestNames  DyingGaspTest
         }
       }
     
