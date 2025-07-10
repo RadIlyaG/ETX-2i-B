@@ -1,8 +1,8 @@
-set gaGui(xy) +211+48
-set gaSet(entDUT) "ETX-2I-B_LY/WR/2SFP/4UTP/RTR"
-set gaSet(DutInitName) "ETX-2I-B_LY.WR.2SFP.4UTP.RTR.tcl"
+set gaGui(xy) +327+51
+set gaSet(entDUT) "ETX-2I-B/WR/2SFP/4UTP/RTR"
+set gaSet(DutInitName) "ETX-2I-B.WR.2SFP.4UTP.RTR.tcl"
 set gaSet(performShortTest) "0"
-set gaSet(eraseTitle) "1"
+set gaSet(eraseTitle) 0
 set gaSet(pioType) "Usb"
 set gaSet(enDownloadsBefore) "1"
 set gaSet(radTsts) "Full"
