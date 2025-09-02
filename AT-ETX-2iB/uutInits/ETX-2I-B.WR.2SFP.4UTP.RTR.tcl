@@ -1,5 +1,5 @@
 set gaSet(sw)          "?"
-set gaSet(dbrSW)       "6.8.5(1.88)"
+set gaSet(dbrSW)       "6.8.5(1.108)"
 set gaSet(swPack)      "SW3358"
 set gaSet(DutFullName) "ETX-2I-B/WR/2SFP/4UTP/RTR"
 set gaSet(DutInitName) "ETX-2I-B.WR.2SFP.4UTP.RTR.tcl"
